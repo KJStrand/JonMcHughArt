@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Jonathan McHugh Artwork</title>
+    <meta name="description" content="Jonathan McHugh Artwork">
+    
+    <script src="https://aframe.io/releases/0.7.0/aframe.min.js"></script>
+<!--     <script src="https://rawgit.com/aframevr/aframe/master/dist/aframe-master.js"></script> -->
+    
+    <!-- teleportation -->
+    <script src="https://unpkg.com/aframe-teleport-controls@0.2.x/dist/aframe-teleport-controls.min.js"></script>
+    
+    <!-- 3D.io -->
+    <script src="https://3d.io/releases/3dio-js/1.x.x/3dio.min.js"></script>
+    
+    <script>
+      AFRAME.registerComponent('control_movement', {
+
+        init: function () {
+          document.querySelector('a-scene').addEventListener('enter-vr', function () {
+            document.querySelector('a-camera').object3D.position.set(0,0,0);
+          });
+          
+          // Reload work around, Oculus Go controller stops responding after re-entering VR
+          // https://github.com/aframevr/aframe/issues/3390
+          document.querySelector('a-scene').addEventListener('exit-vr', function () {
+            window.location.reload(true);
+          });
+          
+          this.TRIGGER_EVENT = 'triggerdown'
+          this.UNTRIGGER_EVENT = 'triggerup'
+          
+          this.TRACKPAD_EVENT = 'trackpaddown'
+          this.UNTRACKPAD_EVENT = 'trackpadup'
+          
+          this.triggered = false
+          this.trackpad = false
+          
+          this.currentPlanePos = document.querySelector('#plane').getAttribute('position')
+          this.triggerStartPos = null
+          this.trackpadStartPos = null
+          
+          this.el.addEventListener(this.TRIGGER_EVENT, e => this.startTrigger(e))
+          this.el.addEventListener(this.UNTRIGGER_EVENT, e => this.endTrigger(e))
+          
+          this.el.addEventListener(this.TRACKPAD_EVENT, e => this.startTrackpad(e))
+          this.el.addEventListener(this.UNTRACKPAD_EVENT, e => this.endTrackpad(e))
+          
+        },
+        
+        startTrigger: function (evt) {
+          this.triggered = true;
+          this.triggerStartPos = this.el.getAttribute('position')
+          this.triggerStartPos_x = this.triggerStartPos.x
+          this.triggerStartPos_y = this.triggerStartPos.y
+          // AFRAME.log('Start Trigger Called at position: ' + this.triggerStartPos_y);
+                                                      
+        },
+        
+        endTrigger: function (evt) {
+          // AFRAME.log('End Trigger Called...');
+          this.triggered = false;
+        },
+        
+        startTrackpad: function (evt) {
+          this.trackpad = true;
+          this.trackpadStartPos = this.el.getAttribute('position')
+          this.trackpadStartPos_z = this.trackpadStartPos.z
+          // AFRAME.log('Start Trigger Called at position: ' + this.trackpadStartPos_z);
+                                                      
+        },
+        
+        endTrackpad: function (evt) {
+          // AFRAME.log('End Trackpad Called...');
+          this.trackpad = false;
+        },
+        
+        tick: function () {
+          
+          if (this.triggered || this.trackpad){
+            var plane = document.querySelector('#plane');
+            var currentPosPlane = plane.getAttribute('position');
+            var controller = document.querySelector('#controller');
+            var currentPosController = controller.getAttribute('position');
+          }
+          
+          if (this.triggered){
+            // AFRAME.log('Holding trigger...');
+            var triggerPosDiff_x = (currentPosController.x - this.triggerStartPos_x)
+            var triggerPosDiff_y = (currentPosController.y - this.triggerStartPos_y)
+            
+            plane.object3D.position.x += triggerPosDiff_x
+            plane.object3D.position.y += triggerPosDiff_y
+            this.triggerStartPos_x = currentPosController.x
+            this.triggerStartPos_y = currentPosController.y
+          }
+          
+          if (this.trackpad){
+            // AFRAME.log('Holding trackpad...');
+            var trackpadPosDiff_z = (currentPosController.z - this.trackpadStartPos_z)
+            plane.object3D.position.z += trackpadPosDiff_z
+            this.trackpadStartPos_z = currentPosController.z
+            
+          }
+          
+        }
+      });
+
+    
+    </script>
+
+    
+  </head>
+  <body>
+<!--     <a-scene> -->
+    <a-scene antialias="true">
+      
+      <a-assets>
+        <img crossorigin="anonymous" id="ocean" src="https://cdn.glitch.com/3904be30-8528-48c4-a521-f070f1e8342d%2FOcean.jpg?1536292942762">
+        <img crossorigin="anonymous" id="hannah" src="https://cdn.glitch.com/3904be30-8528-48c4-a521-f070f1e8342d%2FHannah_24_36.jpg?1536297032166">
+        <img crossorigin="anonymous" id="india" src="https://cdn.glitch.com/3904be30-8528-48c4-a521-f070f1e8342d%2FIndia_18_24.jpg?1536296972933">
+        
+        
+        <img crossorigin="anonymous" id="blue_penguin_logo" src="https://cdn.glitch.com/2c53c3e6-8713-41e0-9207-4b5c8c195aff%2Fbluepenguin_logo.png?1519499846128">
+        <img crossorigin="anonymous" id="jon" src="https://cdn.glitch.com/3904be30-8528-48c4-a521-f070f1e8342d%2Fjonathan.jpeg?1536300317783">
+        
+        
+        </a-assets>
+      
+      <a-entity position="0 1.7 -0.1">
+        <a-entity control_movement id="controller" oculus-go-controls daydream-controls></a-entity>
+      </a-entity>
+      
+      <a-camera position="1 0 -15" id="plane"></a-camera>
+      
+      
+<!--       <a-entity id="cameraWrapper" > -->
+<!--         <a-camera position="1 0 -15" id="plane"></a-camera> -->
+        
+<!--         <a-entity windows-motion-controls="hand: left" teleport-controls="type: parabolic; collisionEntities: .floor"></a-entity> -->
+          
+<!--         <a-entity windows-motion-controls="hand: right" teleport-controls="type: parabolic; collisionEntities: .floor"> -->
+          <!-- Scary flashlight -->
+          <!-- a-light light="penumbra: 0.5; intensity: 0.5; angle: 20; type: spot; color: #bbbab3"></a-light -->
+          <!-- a-light position="1.152 1 -11.872" light="intensity:0.31999999999999995;color:blue;type:point"></a-light>
+          <a-light position="0 0 0" light="intensity:0.31999999999999995;color:#f7f7f4;type:ambient"></a-light -->
+<!--         </a-entity> -->
+        
+        <!-- a-entity daydream-controls teleport-controls="type: parabolic;"></a-entity -->
+<!--       </a-entity> -->
+      
+      <!-- Artwork -->
+      <a-entity id="left_wall" position="-1.468 1.581 -14.268" rotation="0 90 0" scale="2.105 2.105 3.573">
+        <a-image src="#hannah" width="0.6096" height="0.8128" geometry="height:0.813;width:0.61">
+          <a-entity io3d-interior="material_Frame:Black; material_Juniqe gerahmte premium Poster - 120 cm x 120 cmPaper:Paper; " io3d-furniture="id:adc5a904-e3ef-4353-9cd4-a27a735fef43" shadow="cast:false;receive:false" position="0 -1.12 -0.004" io3d-uuid="1e3c4768-0c35-4899-9f29-e2be1186eb0e" scale="0.61 0.804 1"></a-entity>
+        </a-image>
+      </a-entity>
+      
+      <a-entity id="front_wall" position="0.948 1.571 -16.613">
+        <a-image src="#ocean" scale="1.086 1.086 1.086" width="1.953" height="1.446">
+          <a-entity io3d-interior="material_Frame:Black; material_Juniqe gerahmte premium Poster - 120 cm x 120 cmPaper:Paper; " io3d-furniture="id:adc5a904-e3ef-4353-9cd4-a27a735fef43" shadow="cast:false;receive:false" position="2.641 0 -0.01" io3d-uuid="1e3c4768-0c35-4899-9f29-e2be1186eb0e" scale="1.447 1.886 1.589" rotation="0 0 90.01166961505233"></a-entity>
+        </a-image>
+      </a-entity>
+      
+      <a-entity id="right_wall" position="3.443 1.581 -14.42" rotation="0 -90 0" scale="1.283 1.283 1.283">
+        <a-image src="#india" width="0.9144" height="1.2192" geometry="height:1.219;width:0.914">
+          <a-entity io3d-interior="material_Frame:Black; material_Juniqe gerahmte premium Poster - 120 cm x 120 cmPaper:Paper; " io3d-furniture="id:adc5a904-e3ef-4353-9cd4-a27a735fef43" shadow="cast:false;receive:false" position="0 -1.673 -0.004" io3d-uuid="1e3c4768-0c35-4899-9f29-e2be1186eb0e" scale="0.918 1.201 1"></a-entity>
+        </a-image>
+      </a-entity>
+      
+      
+      
+
+      
+      <a-entity id="Logos" position="1.765 1.397 -11.944" rotation="0 180 0">
+        <a-text value="JONATHAN MCHUGH
+ARTWORK" color="black" width="2" position="0 0.627 0" text="align:center;letterSpacing:3;width:2.93"></a-text>
+        
+        <a-text value="My artwork often focuses upon beauty, exploration, and human lenses of the conscious and subconscious mind.
+                       
+                       This is communicated through a wide variety of styles and media to best convey my intended emotions or experiences. 
+                       
+                       I enjoy taking watercolor paints or drawing supplies with me into the outdoors and capturing the feel of that place and time. 
+                       
+                       I also create music (onewaydoor.bandcamp.com), and love spending time backpacking and fly fishing in the Rocky Mountains of Colorado, my home state. 
+                       
+                       I graduated from Colorado State University with a BA in Art Education and am currently teaching high school art." color="black" width="2" position="-0.207 -0.006 0" text="color:#000000;letterSpacing:1;width:1.16;wrapCount:47.120000000000005" id="bio" scale="1.027 1 1"></a-text>
+        
+        
+        <a-entity id="jon-pic" position="-0.623 -0.778 0" scale="2.778 2.333 2.333">
+          <a-entity io3d-interior="material_Frame:Wood; material_Juniqe gerahmte premium Poster - 120 cm x 120 cmPaper:Paper; " io3d-furniture="id:adc5a904-e3ef-4353-9cd4-a27a735fef43" shadow="cast:false;receive:false" position="0 -0.079 0.005" io3d-uuid="1e3c4768-0c35-4899-9f29-e2be1186eb0e" scale="0.198 0.294 1"> </a-entity>
+          <a-image src="#jon" width="0.1500" height="0.1770" position="0 0.333 0.009" scale="1.313 1.313 1.313" geometry="height:0.226"></a-image>
+        </a-entity>
+        
+<!--         <a-text value="VR Website development by:" color="black" position="0 -0.67 0" text="opacity:0.33999999999999997;width:1.13;value:VR Gallery Created By:;align:center"></a-text> -->
+<!--         <a-image src="#blue_penguin_logo" width="0.970" height="0.332" position="0 -0.77 0" scale="0.405 0.405 0.405" material="opacity:0.33"></a-image> -->
+        
+      </a-entity>
+      
+      <a-image src="#blue_penguin_logo" width="0.970" height="0.332" position="2.042 1.464 -1.922" rotation="0 270 0" scale="6.141 6.141 6.141" material="opacity:0.12"></a-image>
+        
+  
+      <!-- Dim ambient lighting. -->
+      <a-light type="point" position="-0.836 2.051 -13.109" rotation="-10.714 -17.819 0" light="angle:40;color:#e6e7d8;intensity:0.35;penumbra:0.4;type:spot"></a-light>
+      <a-light type="point" position="2.307 2.051 -13.301" rotation="-10.714310768946394 17.8189874285686 0" light="angle:40;color:#e6e7d8;intensity:0.35;penumbra:0.4;type:spot"></a-light>
+      
+      <a-light type="point" position="0.024 2.051 -12.979" rotation="-11.631043241155712 62.79617434633823 -0.7448451336700702" light="angle:40;color:#e6e7d8;intensity:0.35;penumbra:0.4;type:spot"></a-light>
+      <a-light type="point" position="0.024 2.051 -15.318" rotation="-10.714310768946394 114.41967168762541 0" light="angle:40;color:#e6e7d8;intensity:0.35;penumbra:0.4;type:spot"></a-light>
+      
+      <a-light type="point" position="1.888 2.051 -13.317" rotation="-11.631043241155712 -68.75493541569878 -0.7448451336700702" light="angle:40;color:#e6e7d8;intensity:0.35;penumbra:0.4;type:spot"></a-light>
+      <a-light type="point" position="1.571 2.051 -15.318" rotation="-10.714310768946394 -108.28902327972558 0" light="angle:40;color:#e6e7d8;intensity:0.35;penumbra:0.4;type:spot"></a-light>
+      
+      <a-light type="point" position="1.79 2.397 -13.063" rotation="-29.908396905828972 180.02333923010465 -0.6302535746439055" light="penumbra:0.46;intensity:0.65;type:spot;angle:40;color:#e6e7d8"></a-light>
+      
+      <a-entity position="2.652 2.047 -10.815" light="intensity:0.5;type:ambient;color:#ffffff"></a-entity>
+
+      <a-entity class="io3d-level" io3d-uuid="0210eb69-0249-4e31-b1fa-ba0cba7b0abb" position="-16.784 0 -1.265" rotation="0 90 0">
+        
+        
+        <a-entity io3d-wall="h:3;l:3.65;frontHasBase:true;backHasBase:true;material_top:wall_top;material_back:bricks_white;material_front:bricks_white" position="10.508 0 18.85" rotation="0 90 0" io3d-uuid="54feb2a8-a85e-49ca-9468-ab56af583c04">
+          <a-entity io3d-door="l:1.25;w:0.15;h:2.5;hinge:left;side:front;doorAngle:0;material_leaf:doorLeaf-flush-white;material_handle:aluminium;material_threshold:concrete_black" position="1.8 0 0" io3d-uuid="45de4f3a-4cf1-4b8e-ae4c-e273822b1d79"></a-entity>
+        </a-entity>
+        
+<!--         <a-entity io3d-furniture="id:398d8dec-220d-419e-ae87-4d70724695f0; material_Color:Nero" shadow="receive:false" position="-1.796875 0 17.0117188" rotation="0 90 0" io3d-uuid="7a868ab7-0359-4335-ab97-68f9fffcf995"></a-entity> -->
+<!--         <a-entity class="floor" io3d-floor="material_top:concrete_black;material_side:basic-wall;material_ceiling:concrete_dark_ceiling;w:8.95;l:10.65;hCeiling:3" position="4.75 0 15.2" io3d-uuid="8800409d-fb24-4989-9aae-4a9e219fbb90"></a-entity> -->
+        <a-entity class="floor" io3d-floor="w:5.129999999999999;l:5.090000000000001;hCeiling:3;material_top:wood_parquet_oak;material_side:basic-wall;material_ceiling:concrete_dark_ceiling" position="10.451 0 15.2" io3d-uuid="8800409d-fb24-4989-9aae-4a9e219fbb90"></a-entity>
+        
+        <a-entity io3d-wall="l:5.04;h:3;frontHasBase:true;backHasBase:true;material_top:wall_top;material_back:basic-wall;material_front:bricks_white" position="10.507 0 15.15" io3d-uuid="02095378-6526-4874-8cb9-f13a8b1f7a25"></a-entity>
+        <a-entity io3d-wall="l:5.050000000000001;h:3;frontHasBase:true;backHasBase:true;material_top:wall_top;material_back:tiles_large_rect_white;material_front:bricks_white" position="15.55 0 15.3" rotation="0 270 0" io3d-uuid="a78b5473-d0a0-4555-a304-49da4dad6078"></a-entity>
+        <a-entity io3d-wall="l:5.030000000000001;h:3;frontHasBase:true;backHasBase:true;material_top:wall_top;material_back:basic-wall;material_front:bricks_white" position="15.55 0 20.39" rotation="0 180 0" io3d-uuid="46adb6a8-06e1-4e5b-8643-dd9034dc7202"></a-entity>
+        <a-entity io3d-wall="l:1.55;h:3;frontHasBase:true;backHasBase:true;material_top:wall_top;material_back:bricks_white;material_front:basic-wall" position="10.657 0 18.85" rotation="0 270 0" io3d-uuid="1277112a-590d-456c-97ba-69198843c52b"></a-entity>
+        
+        <a-entity io3d-furniture="id:3bb60bb2-ac5d-4fcb-aa87-38aae502e248;" shadow="receive:false" position="11.396 0 18.554" rotation="0 270 0"></a-entity>
+<!--         <a-entity io3d-furniture="id:398d8dec-220d-419e-ae87-4d70724695f0" shadow="receive:false" position="11.396 0 18.554" rotation="0 270 0"></a-entity> -->
+        
+      
+      </a-entity>
+      
+      
+    </a-scene>
+  </body>
+  
+</html>
